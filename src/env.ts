@@ -13,6 +13,9 @@ const EnvSchema = z.object({
   OPENROUTER_API_KEY: z.string().min(1, "OPENROUTER_API_KEY is required"),
 
   NEXT_PUBLIC_APP_URL: z.url(),
+
+  OTEL_ENABLED: z.stringbool().default(false),
+  OTEL_SERVICE_NAME: z.string().default("botplate"),
 });
 
 const parsed = EnvSchema.safeParse(process.env);
