@@ -1,7 +1,9 @@
+import "server-only";
 import { generateText, Output } from "ai";
 import type { z } from "zod";
 import type { LanguageModelRegistry } from "@/ai/registry/language-model.registry";
 import type { LanguageModelLogicalId } from "@/ai/registry/models.config";
+import { env } from "@/env";
 
 export interface GenerateTextInput {
   readonly prompt: string;
@@ -28,6 +30,11 @@ export class GenerationService {
       model: this.models.get(modelId),
       system,
       prompt,
+      experimental_telemetry: {
+        isEnabled: env.OTEL_ENABLED,
+        functionId: "generation.text",
+        metadata: { modelId },
+      },
     });
     return text;
   }
@@ -41,6 +48,11 @@ export class GenerationService {
       system,
       prompt,
       output: Output.object({ schema }),
+      experimental_telemetry: {
+        isEnabled: env.OTEL_ENABLED,
+        functionId: "generation.object",
+        metadata: { modelId },
+      },
     });
     return output as z.infer<TSchema>;
   }
