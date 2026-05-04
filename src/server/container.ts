@@ -1,6 +1,8 @@
+import "server-only";
 import { OpenRouterLanguageModelProvider } from "@/ai/providers/openrouter.provider";
 import { LanguageModelRegistry } from "@/ai/registry/language-model.registry";
 import { ChatStreamingService } from "@/modules/chat/application/chat-streaming.service";
+import { DrizzleConversationRepository } from "@/modules/chat/infrastructure/conversation.repository";
 import { GenerationService } from "@/modules/generation/application/generation.service";
 
 /**
@@ -10,8 +12,10 @@ import { GenerationService } from "@/modules/generation/application/generation.s
 export function createContainer() {
   const port = new OpenRouterLanguageModelProvider();
   const models = new LanguageModelRegistry(port);
+  const conversations = new DrizzleConversationRepository();
   return {
-    chat: new ChatStreamingService(models),
+    conversations,
+    chat: new ChatStreamingService(models, conversations),
     generation: new GenerationService(models),
   };
 }

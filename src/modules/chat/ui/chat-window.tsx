@@ -1,12 +1,24 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
+import { DefaultChatTransport, type UIMessage } from "ai";
 import { useState } from "react";
 
-export function ChatWindow() {
+export interface ChatWindowProps {
+  chatId: string;
+  initialMessages: UIMessage[];
+}
+
+export function ChatWindow({ chatId, initialMessages }: ChatWindowProps) {
   const { messages, sendMessage, status } = useChat({
-    transport: new DefaultChatTransport({ api: "/api/chat" }),
+    id: chatId,
+    messages: initialMessages,
+    transport: new DefaultChatTransport({
+      api: "/api/chat",
+      prepareSendMessagesRequest: ({ messages, id }) => ({
+        body: { message: messages[messages.length - 1], id },
+      }),
+    }),
   });
   const [input, setInput] = useState("");
   const busy = status !== "ready";
