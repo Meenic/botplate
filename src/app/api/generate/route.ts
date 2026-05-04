@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { createContainer } from "@/server/container";
+import { errorToResponse } from "@/server/http";
 
 const Body = z.object({
   prompt: z.string().min(1),
@@ -7,11 +8,12 @@ const Body = z.object({
 });
 
 export async function POST(req: Request): Promise<Response> {
-  const parsed = Body.safeParse(await req.json());
-  if (!parsed.success) {
-    return Response.json({ error: "invalid_body" }, { status: 400 });
+  try {
+    const data = Body.parse(await req.json());
+    const { generation } = createContainer();
+    const text = await generation.text(data);
+    return Response.json({ text });
+  } catch (err) {
+    return errorToResponse(err);
   }
-  const { generation } = createContainer();
-  const text = await generation.text(parsed.data);
-  return Response.json({ text });
 }
