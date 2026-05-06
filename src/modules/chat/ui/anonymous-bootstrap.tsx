@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { authClient } from "@/lib/auth-client";
 
 /**
@@ -25,8 +26,9 @@ export function AnonymousBootstrap() {
   }, [router]);
 
   return (
-    <div className="flex h-dvh items-center justify-center text-sm text-muted-foreground">
-      Signing you in…
+    <div className="flex h-dvh flex-col items-center justify-center gap-4">
+      <Skeleton className="h-10 w-40" />
+      <Skeleton className="h-4 w-32" />
     </div>
   );
 }
