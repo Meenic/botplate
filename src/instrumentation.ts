@@ -1,4 +1,48 @@
+import type {
+  OnFinishEvent,
+  OnStartEvent,
+  OnStepFinishEvent,
+  TelemetryIntegration,
+} from "ai";
+import { bindTelemetryIntegration } from "ai";
 import { env } from "@/env";
+
+/**
+ * Custom telemetry integration for logging AI SDK events to console.
+ * Provides detailed logging of tokens, model info, and timing.
+ */
+class ConsoleTelemetryIntegration implements TelemetryIntegration {
+  async onStart(event: OnStartEvent) {
+    console.log("[ai-telemetry] Generation started:", {
+      modelId: event.model.modelId,
+      functionId: event.functionId,
+      metadata: event.metadata,
+    });
+  }
+
+  async onFinish(event: OnFinishEvent) {
+    console.log("[ai-telemetry] Generation finished:", {
+      modelId: event.model.modelId,
+      functionId: event.functionId,
+      totalTokens: event.totalUsage.totalTokens,
+      inputTokens: event.totalUsage.inputTokens,
+      outputTokens: event.totalUsage.outputTokens,
+      metadata: event.metadata,
+    });
+  }
+
+  async onStepFinish(event: OnStepFinishEvent) {
+    console.log("[ai-telemetry] Step finished:", {
+      stepNumber: event.stepNumber,
+      totalTokens: event.usage.totalTokens,
+      inputTokens: event.usage.inputTokens,
+      outputTokens: event.usage.outputTokens,
+    });
+  }
+}
+
+export const consoleTelemetryIntegration = () =>
+  bindTelemetryIntegration(new ConsoleTelemetryIntegration());
 
 /**
  * Instrumentation hook. Boots OpenTelemetry via `@vercel/otel` when
