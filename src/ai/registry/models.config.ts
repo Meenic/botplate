@@ -22,7 +22,7 @@ export type ModelEntry = {
 
 export const LANGUAGE_MODEL_CATALOG = {
   "chat.default": {
-    providerModelId: "google/gemini-3.1-flash-lite-preview",
+    providerModelId: "deepseek/deepseek-v4-flash",
     capabilities: ["chat"],
   },
   "chat.fast": {

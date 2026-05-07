@@ -81,40 +81,72 @@
   --sidebar-accent-foreground: oklch(0.245 0.018 60);
   --sidebar-border: oklch(0.862 0.016 75);
   --sidebar-ring: oklch(0.645 0.17 48);
+  --syntax-base: oklch(0.22 0.018 60);
+  --syntax-comment: oklch(0.548 0.018 65); /* matches --muted-foreground */
+  --syntax-punctuation: oklch(0.42 0.014 62);
+  --syntax-keyword: oklch(0.42 0.148 288); /* warm violet */
+  --syntax-string: oklch(0.46 0.128 152); /* muted sage */
+  --syntax-number: oklch(0.58 0.158 52); /* amber — matches --accent hue */
+  --syntax-function: oklch(0.44 0.125 238); /* steel blue */
+  --syntax-class-name: oklch(0.48 0.13 198); /* teal-blue */
+  --syntax-attr-name: oklch(0.44 0.125 238);
+  --syntax-operator: oklch(0.48 0.11 48); /* warm amber-brown */
+  --syntax-tag: oklch(0.46 0.132 288);
+  --syntax-variable: oklch(0.58 0.158 52);
+  --syntax-regex: oklch(0.5 0.168 178);
+  --syntax-important: oklch(0.535 0.215 22); /* matches --destructive */
+  --syntax-deleted: oklch(0.535 0.215 22);
+  --syntax-property: oklch(0.44 0.125 238);
 }
 
 .dark {
-  --background: oklch(0.148 0.02 56);
+  --background: oklch(0.128 0.006 58);
   --foreground: oklch(0.952 0.012 82);
-  --card: oklch(0.188 0.02 57);
+  --card: oklch(0.162 0.007 58);
   --card-foreground: oklch(0.952 0.012 82);
-  --popover: oklch(0.188 0.02 57);
+  --popover: oklch(0.162 0.007 58);
   --popover-foreground: oklch(0.952 0.012 82);
   --primary: oklch(0.918 0.014 82);
-  --primary-foreground: oklch(0.188 0.02 57);
-  --secondary: oklch(0.245 0.02 58);
+  --primary-foreground: oklch(0.162 0.007 58);
+  --secondary: oklch(0.215 0.007 60);
   --secondary-foreground: oklch(0.918 0.014 82);
-  --muted: oklch(0.245 0.02 58);
-  --muted-foreground: oklch(0.645 0.018 68);
-  --accent: oklch(0.715 0.175 50);
-  --accent-foreground: oklch(0.148 0.02 56);
+  --muted: oklch(0.215 0.007 60);
+  --muted-foreground: oklch(0.632 0.01 68);
+  --accent: oklch(0.768 0.118 52);
+  --accent-foreground: oklch(0.128 0.006 58);
   --destructive: oklch(0.685 0.2 22);
-  --border: oklch(1 0.01 80 / 13%);
-  --input: oklch(1 0.01 80 / 17%);
-  --ring: oklch(0.715 0.175 50);
-  --chart-1: oklch(0.775 0.165 50);
-  --chart-2: oklch(0.648 0.158 50);
-  --chart-3: oklch(0.518 0.128 52);
-  --chart-4: oklch(0.398 0.098 55);
-  --chart-5: oklch(0.278 0.065 58);
-  --sidebar: oklch(0.172 0.022 56);
+  --border: oklch(1 0.005 80 / 9%);
+  --input: oklch(1 0.005 80 / 12%);
+  --ring: oklch(0.768 0.118 52);
+  --chart-1: oklch(0.768 0.118 52);
+  --chart-2: oklch(0.638 0.105 50);
+  --chart-3: oklch(0.512 0.085 52);
+  --chart-4: oklch(0.39 0.065 55);
+  --chart-5: oklch(0.268 0.038 58);
+  --sidebar: oklch(0.148 0.007 58);
   --sidebar-foreground: oklch(0.952 0.012 82);
-  --sidebar-primary: oklch(0.715 0.175 50);
-  --sidebar-primary-foreground: oklch(0.148 0.02 56);
-  --sidebar-accent: oklch(0.245 0.02 58);
+  --sidebar-primary: oklch(0.768 0.118 52);
+  --sidebar-primary-foreground: oklch(0.128 0.006 58);
+  --sidebar-accent: oklch(0.215 0.007 60);
   --sidebar-accent-foreground: oklch(0.918 0.014 82);
-  --sidebar-border: oklch(1 0.01 80 / 13%);
-  --sidebar-ring: oklch(0.715 0.175 50);
+  --sidebar-border: oklch(1 0.005 80 / 9%);
+  --sidebar-ring: oklch(0.768 0.118 52);
+  --syntax-base: oklch(0.88 0.01 80); /* matches --foreground tone */
+  --syntax-comment: oklch(0.632 0.01 68); /* matches --muted-foreground */
+  --syntax-punctuation: oklch(0.68 0.009 75);
+  --syntax-keyword: oklch(0.74 0.148 292); /* warm violet, bright enough */
+  --syntax-string: oklch(0.72 0.128 152); /* sage green */
+  --syntax-number: oklch(0.768 0.118 52); /* matches --accent exactly */
+  --syntax-function: oklch(0.7 0.125 238); /* steel blue */
+  --syntax-class-name: oklch(0.72 0.125 198); /* teal-blue */
+  --syntax-attr-name: oklch(0.7 0.125 238);
+  --syntax-operator: oklch(0.768 0.1 52); /* warm, matches accent hue */
+  --syntax-tag: oklch(0.7 0.132 288);
+  --syntax-variable: oklch(0.768 0.118 52);
+  --syntax-regex: oklch(0.7 0.165 178);
+  --syntax-important: oklch(0.685 0.2 22); /* matches --destructive dark */
+  --syntax-deleted: oklch(0.685 0.2 22);
+  --syntax-property: oklch(0.7 0.125 238);
 }
 
 @layer base {
