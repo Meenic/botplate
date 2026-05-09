@@ -82,19 +82,19 @@
   --sidebar-border: oklch(0.862 0.016 75);
   --sidebar-ring: oklch(0.645 0.17 48);
   --syntax-base: oklch(0.22 0.018 60);
-  --syntax-comment: oklch(0.548 0.018 65); /* matches --muted-foreground */
+  --syntax-comment: oklch(0.548 0.018 65);
   --syntax-punctuation: oklch(0.42 0.014 62);
-  --syntax-keyword: oklch(0.42 0.148 288); /* warm violet */
-  --syntax-string: oklch(0.46 0.128 152); /* muted sage */
-  --syntax-number: oklch(0.58 0.158 52); /* amber — matches --accent hue */
-  --syntax-function: oklch(0.44 0.125 238); /* steel blue */
-  --syntax-class-name: oklch(0.48 0.13 198); /* teal-blue */
+  --syntax-keyword: oklch(0.42 0.148 288);
+  --syntax-string: oklch(0.46 0.128 152);
+  --syntax-number: oklch(0.58 0.158 52);
+  --syntax-function: oklch(0.44 0.125 238);
+  --syntax-class-name: oklch(0.48 0.13 198);
   --syntax-attr-name: oklch(0.44 0.125 238);
-  --syntax-operator: oklch(0.48 0.11 48); /* warm amber-brown */
+  --syntax-operator: oklch(0.48 0.11 48);
   --syntax-tag: oklch(0.46 0.132 288);
   --syntax-variable: oklch(0.58 0.158 52);
   --syntax-regex: oklch(0.5 0.168 178);
-  --syntax-important: oklch(0.535 0.215 22); /* matches --destructive */
+  --syntax-important: oklch(0.535 0.215 22);
   --syntax-deleted: oklch(0.535 0.215 22);
   --syntax-property: oklch(0.44 0.125 238);
 }
@@ -131,20 +131,20 @@
   --sidebar-accent-foreground: oklch(0.918 0.014 82);
   --sidebar-border: oklch(1 0.005 80 / 9%);
   --sidebar-ring: oklch(0.768 0.118 52);
-  --syntax-base: oklch(0.88 0.01 80); /* matches --foreground tone */
-  --syntax-comment: oklch(0.632 0.01 68); /* matches --muted-foreground */
+  --syntax-base: oklch(0.88 0.01 80);
+  --syntax-comment: oklch(0.632 0.01 68);
   --syntax-punctuation: oklch(0.68 0.009 75);
-  --syntax-keyword: oklch(0.74 0.148 292); /* warm violet, bright enough */
-  --syntax-string: oklch(0.72 0.128 152); /* sage green */
-  --syntax-number: oklch(0.768 0.118 52); /* matches --accent exactly */
-  --syntax-function: oklch(0.7 0.125 238); /* steel blue */
-  --syntax-class-name: oklch(0.72 0.125 198); /* teal-blue */
+  --syntax-keyword: oklch(0.74 0.148 292);
+  --syntax-string: oklch(0.72 0.128 152);
+  --syntax-number: oklch(0.768 0.118 52);
+  --syntax-function: oklch(0.7 0.125 238);
+  --syntax-class-name: oklch(0.72 0.125 198);
   --syntax-attr-name: oklch(0.7 0.125 238);
-  --syntax-operator: oklch(0.768 0.1 52); /* warm, matches accent hue */
+  --syntax-operator: oklch(0.768 0.1 52);
   --syntax-tag: oklch(0.7 0.132 288);
   --syntax-variable: oklch(0.768 0.118 52);
   --syntax-regex: oklch(0.7 0.165 178);
-  --syntax-important: oklch(0.685 0.2 22); /* matches --destructive dark */
+  --syntax-important: oklch(0.685 0.2 22);
   --syntax-deleted: oklch(0.685 0.2 22);
   --syntax-property: oklch(0.7 0.125 238);
 }

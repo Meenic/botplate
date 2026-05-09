@@ -17,7 +17,7 @@ const formSchema = z.object({
   message: z
     .string()
     .min(1, "Message cannot be empty")
-    .max(10_000, "Message too long"),
+    .max(500_000, "Message too long"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -76,7 +76,10 @@ export function ChatInput({ status, onSubmit, onStop }: ChatInputProps) {
                 {...field}
                 disabled={isDisabled}
                 placeholder="Send a message..."
-                className="min-h-auto p-5 pb-0 text-base!"
+                className={cn(
+                  "min-h-auto p-5 pb-0 text-base!",
+                  "max-h-80 overflow-y-auto",
+                )}
                 rows={1}
                 onKeyDown={handleKeyDown}
                 aria-label="Message"
