@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import type { ChatUIMessage } from "@/modules/chat/chat.types";
 import { AnonymousBootstrap } from "@/modules/chat/ui/anonymous-bootstrap";
 import { ChatWindow } from "@/modules/chat/ui/chat-window";
 import { getCurrentUser } from "@/server/auth-context";
@@ -18,8 +17,7 @@ export default async function Page({
   const owned = await conversations.getOwned(id, user.id);
   if (!owned) notFound();
 
-  const initialMessages = (await conversations.listMessages(
-    id,
-  )) as ChatUIMessage[];
+  const initialMessages = await conversations.listMessages(id);
+
   return <ChatWindow chatId={id} initialMessages={initialMessages} />;
 }

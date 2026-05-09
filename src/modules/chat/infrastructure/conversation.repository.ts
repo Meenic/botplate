@@ -1,13 +1,12 @@
-import "server-only";
 import type { UIMessage } from "ai";
 import { and, asc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { conversations, messages } from "@/modules/chat/schema/chat";
+import type { ChatUIMessage } from "../chat.types";
 
-export interface ConversationRow {
-  readonly id: string;
-  readonly userId: string;
-}
+export type Conversation = typeof conversations.$inferSelect;
+export type Message = typeof messages.$inferSelect;
+export type ConversationRow = Pick<Conversation, "id" | "userId">;
 
 export abstract class ConversationRepository {
   abstract create(input: {
@@ -15,80 +14,64 @@ export abstract class ConversationRepository {
     userId: string;
     title?: string | null;
   }): Promise<void>;
-
   abstract getOwned(
     id: string,
     userId: string,
   ): Promise<ConversationRow | null>;
-
-  abstract listMessages(conversationId: string): Promise<UIMessage[]>;
-
+  abstract listMessages(conversationId: string): Promise<ChatUIMessage[]>;
   abstract insertMessages(
     conversationId: string,
     msgs: UIMessage[],
   ): Promise<void>;
-
   abstract touch(conversationId: string): Promise<void>;
 }
 
 export class DrizzleConversationRepository extends ConversationRepository {
-  async create({
-    id,
-    userId,
-    title = null,
-  }: {
-    id: string;
-    userId: string;
-    title?: string | null;
-  }): Promise<void> {
-    await db.insert(conversations).values({ id, userId, title });
+  async create(input: { id: string; userId: string; title?: string | null }) {
+    await db.insert(conversations).values(input);
   }
 
-  async getOwned(id: string, userId: string): Promise<ConversationRow | null> {
-    const rows = await db
-      .select({
-        id: conversations.id,
-        userId: conversations.userId,
-      })
+  async getOwned(id: string, userId: string) {
+    const row = await db
+      .select({ id: conversations.id, userId: conversations.userId })
       .from(conversations)
       .where(and(eq(conversations.id, id), eq(conversations.userId, userId)))
       .limit(1);
-    return rows[0] ?? null;
+    return row[0] ?? null;
   }
 
-  async listMessages(conversationId: string): Promise<UIMessage[]> {
+  async listMessages(conversationId: string): Promise<ChatUIMessage[]> {
     const rows = await db
-      .select()
+      .select({
+        id: messages.id,
+        role: messages.role,
+        parts: messages.parts,
+      })
       .from(messages)
       .where(eq(messages.conversationId, conversationId))
       .orderBy(asc(messages.createdAt));
 
-    return rows.map(
-      (r) =>
-        ({
-          id: r.id,
-          role: r.role,
-          parts: r.parts,
-        }) as UIMessage,
-    );
+    return rows.map((r) => ({
+      ...r,
+      parts: r.parts as ChatUIMessage["parts"],
+    }));
   }
 
-  async insertMessages(
-    conversationId: string,
-    msgs: UIMessage[],
-  ): Promise<void> {
+  async insertMessages(conversationId: string, msgs: UIMessage[]) {
     if (msgs.length === 0) return;
-    await db.insert(messages).values(
-      msgs.map((m) => ({
-        id: m.id,
-        conversationId,
-        role: m.role,
-        parts: m.parts as unknown[],
-      })),
-    );
+    await db.batch([
+      db.insert(messages).values(
+        msgs.map((m) => ({
+          id: m.id,
+          conversationId,
+          role: m.role,
+          parts: m.parts,
+        })),
+      ),
+    ]);
   }
 
-  async touch(conversationId: string): Promise<void> {
+  async touch(conversationId: string) {
     await db
       .update(conversations)
       .set({ updatedAt: new Date() })

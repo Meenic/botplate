@@ -27,7 +27,7 @@ export const messages = pgTable(
     conversationId: text("conversation_id")
       .notNull()
       .references(() => conversations.id, { onDelete: "cascade" }),
-    role: text("role").notNull(),
+    role: text("role", { enum: ["user", "system", "assistant"] }).notNull(),
     parts: jsonb("parts").$type<unknown[]>().notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
