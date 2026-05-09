@@ -4,6 +4,7 @@ import type { LanguageModelLogicalId } from "@/ai/registry/models.config";
 
 /**
  * Per-request cache so multiple resolves in the same handler share one instance.
+ * Wraps a LanguageModelPort and caches resolved models.
  */
 export class LanguageModelRegistry {
   private readonly cache = new Map<LanguageModelLogicalId, LanguageModel>();

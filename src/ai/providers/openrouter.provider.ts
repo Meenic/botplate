@@ -2,13 +2,9 @@ import {
   createOpenRouter,
   type OpenRouterProvider,
 } from "@openrouter/ai-sdk-provider";
-import type { LanguageModel } from "ai";
-import { LanguageModelPort } from "@/ai/ports/language-model.port";
-import {
-  LANGUAGE_MODEL_CATALOG,
-  type LanguageModelLogicalId,
-  type ModelEntry,
-} from "@/ai/registry/models.config";
+import { customProvider, type LanguageModel } from "ai";
+import type { LanguageModelPort } from "@/ai/ports/language-model.port";
+import { LANGUAGE_MODEL_CATALOG } from "@/ai/registry/models.config";
 import { env } from "@/env";
 
 /**
@@ -21,16 +17,26 @@ function makeClient(): OpenRouterProvider {
 /**
  * OpenRouter adapter for the language model port.
  */
-export class OpenRouterLanguageModelProvider extends LanguageModelPort {
+export class OpenRouterLanguageModelProvider implements LanguageModelPort {
   private readonly client: OpenRouterProvider;
+  private readonly provider;
 
   constructor() {
-    super();
     this.client = makeClient();
+
+    // Build the language models map from your existing catalog
+    const models: Record<string, ReturnType<OpenRouterProvider["chat"]>> = {};
+    for (const [id, entry] of Object.entries(LANGUAGE_MODEL_CATALOG)) {
+      models[id] = this.client.chat(entry.providerModelId, entry.settings);
+    }
+
+    this.provider = customProvider({
+      languageModels: models,
+      fallbackProvider: this.client,
+    });
   }
 
-  resolve(id: LanguageModelLogicalId): LanguageModel {
-    const entry: ModelEntry = LANGUAGE_MODEL_CATALOG[id];
-    return this.client.chat(entry.providerModelId, entry.settings);
+  resolve(id: string): LanguageModel {
+    return this.provider.languageModel(id);
   }
 }

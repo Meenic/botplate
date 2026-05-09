@@ -1,3 +1,5 @@
+import type { OpenRouterChatSettings } from "@openrouter/ai-sdk-provider";
+
 /**
  * Logical model catalog.
  *
@@ -17,17 +19,19 @@ export type KnownProviderModelId =
 export type ModelEntry = {
   readonly providerModelId: KnownProviderModelId;
   readonly capabilities: readonly ModelCapability[];
-  readonly settings?: Readonly<Record<string, unknown>>;
+  readonly settings?: OpenRouterChatSettings;
 };
 
 export const LANGUAGE_MODEL_CATALOG = {
   "chat.default": {
     providerModelId: "deepseek/deepseek-v4-flash",
     capabilities: ["chat"],
+    settings: undefined,
   },
   "chat.fast": {
     providerModelId: "google/gemini-3-flash-preview",
     capabilities: ["chat", "fast"],
+    settings: undefined,
   },
 } as const satisfies Record<string, ModelEntry>;
 
