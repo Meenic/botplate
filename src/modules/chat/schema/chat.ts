@@ -1,3 +1,4 @@
+import type { UIMessage } from "ai";
 import { relations } from "drizzle-orm";
 import { index, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { user } from "@/db/schema/auth";
@@ -27,8 +28,8 @@ export const messages = pgTable(
     conversationId: text("conversation_id")
       .notNull()
       .references(() => conversations.id, { onDelete: "cascade" }),
-    role: text("role", { enum: ["user", "system", "assistant"] }).notNull(),
-    parts: jsonb("parts").$type<unknown[]>().notNull(),
+    role: text("role").$type<UIMessage["role"]>().notNull(),
+    parts: jsonb("parts").$type<UIMessage["parts"]>().notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
