@@ -1,21 +1,22 @@
-import type { ChatStatus, UIMessage } from "ai";
-import { useEffect, useEffectEvent } from "react";
+"use client";
 
-export function useScrollToBottom(messages: UIMessage[], status: ChatStatus) {
-  const onScroll = useEffectEvent(() => {
-    const scrollingElement = document.scrollingElement;
-    if (!scrollingElement) return;
+import { useEffect, useRef } from "react";
 
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage?.role === "user" || status === "ready") {
-      scrollingElement.scrollTo({
-        top: scrollingElement.scrollHeight,
-        behavior: "smooth",
-      });
-    }
-  });
+export function useScrollToBottom(behavior: ScrollBehavior = "instant") {
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Disable browser scroll-restoration once on mount.
+  useEffect(() => {
+    const previous = history.scrollRestoration;
+    history.scrollRestoration = "manual";
+    return () => {
+      history.scrollRestoration = previous;
+    };
+  }, []);
 
   useEffect(() => {
-    onScroll();
-  });
+    ref.current?.scrollIntoView({ behavior, block: "end" });
+  }, [behavior]);
+
+  return ref;
 }

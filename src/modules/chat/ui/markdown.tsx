@@ -1,120 +1,190 @@
 "use client";
 
 import { ArrowUpRight, Check, Copy } from "lucide-react";
-import { useState } from "react";
-import ReactMarkdown, { type Components } from "react-markdown";
+import { useCallback, useState } from "react";
+import type { Components } from "react-markdown";
+import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import remarkGfm from "remark-gfm";
 import { Button } from "@/components/ui/button";
-import { syntaxTheme } from "@/lib/syntax-theme";
 import { cn } from "@/lib/utils";
+import { syntaxTheme } from "./syntax-theme";
 
 const SPACING = {
-  block: "my-4",
-  paragraph: "mt-0 mb-4",
-  list: "my-3",
-  heading1: "mt-6 mb-3",
-  heading2: "mt-5 mb-2",
-  heading3: "mt-4 mb-2",
-  heading4: "mt-3",
-  heading5: "mt-3",
-  heading6: "mt-3",
-  divider: "my-6",
-};
+  block: "mb-4",
+  heading: "mb-2",
+  headingTop: "mt-6",
+  list: "mb-4",
+  listItem: "mb-1",
+  hr: "my-6",
+} as const;
 
-function CodeBlock({
+export function CodeBlock({
   language,
   children,
+  className,
 }: {
   language: string;
   children: string;
+  className?: string;
 }) {
   const [copied, setCopied] = useState(false);
 
-  async function copy() {
-    await navigator.clipboard.writeText(children);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  }
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(children);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1696);
+    } catch {
+      // Clipboard API unavailable
+    }
+  }, [children]);
 
   return (
-    <div className={cn(SPACING.block, "rounded-3xl border overflow-hidden")}>
+    <div
+      className={cn(
+        "relative rounded-3xl border border-border overflow-hidden",
+        SPACING.block,
+        "last:mb-0",
+        className,
+      )}
+    >
+      {/* Header: language label + copy button */}
       <div className="flex items-center justify-between p-2">
-        <span className="text-sm text-muted-foreground ml-3">
-          {language || "text"}
+        <span className="font-mono text-xs text-muted-foreground select-none ml-3">
+          {language}
         </span>
         <Button
-          type="button"
-          variant="ghost"
           size="icon"
-          onClick={copy}
-          aria-label="Copy code"
+          variant="ghost"
+          className="text-muted-foreground hover:text-foreground"
+          onClick={handleCopy}
+          aria-label={copied ? "Copied" : "Copy code"}
         >
           {copied ? <Check /> : <Copy />}
         </Button>
       </div>
-      <div>
-        <SyntaxHighlighter
-          language={language || "text"}
-          style={syntaxTheme}
-          customStyle={{
-            margin: 0,
-            padding: "0rem 1.25rem 0.75rem 1.25rem",
-            borderRadius: 0,
-            background: "transparent",
-            fontSize: "12.25px",
-            lineHeight: "1.7",
-            overflowX: "auto",
-            fontVariantLigatures: "none",
-          }}
-        >
-          {children}
-        </SyntaxHighlighter>
-      </div>
+
+      {/* Scrollable code body */}
+      <SyntaxHighlighter
+        language={language}
+        style={syntaxTheme}
+        PreTag="div"
+        customStyle={{
+          background: "none",
+          padding: "0rem 1.25rem 0.75rem 1.25rem",
+          margin: 0,
+          fontSize: "0.750rem",
+          lineHeight: "1.7",
+          overflowX: "auto",
+          fontVariantLigatures: "none",
+        }}
+        codeTagProps={{
+          style: { fontFamily: "var(--font-mono, monospace)" },
+        }}
+      >
+        {children}
+      </SyntaxHighlighter>
     </div>
   );
 }
 
+// react markdown components
 const components: Components = {
   p: ({ className, ...props }) => (
     <p
-      className={cn(SPACING.paragraph, "wrap-break-word", className)}
+      className={cn(
+        "wrap-break-word leading-7 text-foreground",
+        SPACING.block,
+        "last:mb-0",
+        className,
+      )}
       {...props}
     />
   ),
-  a: ({ className, children, href, ...props }) => {
-    const isInternal =
-      href?.startsWith("#") ||
-      href?.startsWith("/") ||
-      href?.startsWith("./") ||
-      href?.startsWith("../") ||
-      href?.startsWith("mailto:") ||
-      href?.startsWith("tel:");
 
-    const isExternal = Boolean(href && !isInternal);
+  // Headings
+  h1: ({ className, ...props }) => (
+    <h1
+      className={cn(
+        "scroll-m-20 text-2xl font-medium tracking-tight",
+        SPACING.headingTop,
+        SPACING.heading,
+        "first:mt-0 last:mb-0",
+        className,
+      )}
+      {...props}
+    />
+  ),
+  h2: ({ className, ...props }) => (
+    <h2
+      className={cn(
+        "scroll-m-20 text-xl font-medium tracking-tight",
+        SPACING.headingTop,
+        SPACING.heading,
+        "first:mt-0 last:mb-0",
+        className,
+      )}
+      {...props}
+    />
+  ),
+  h3: ({ className, ...props }) => (
+    <h3
+      className={cn(
+        "scroll-m-20 text-lg font-medium tracking-tight",
+        SPACING.headingTop,
+        SPACING.heading,
+        "first:mt-0 last:mb-0",
+        className,
+      )}
+      {...props}
+    />
+  ),
+  h4: ({ className, ...props }) => (
+    <h4
+      className={cn(
+        "scroll-m-20 text-base font-medium tracking-tight",
+        SPACING.headingTop,
+        SPACING.heading,
+        "first:mt-0 last:mb-0",
+        className,
+      )}
+      {...props}
+    />
+  ),
+  h5: ({ className, ...props }) => (
+    <h5
+      className={cn(
+        "scroll-m-20 text-sm font-medium tracking-tight",
+        SPACING.headingTop,
+        SPACING.heading,
+        "first:mt-0 last:mb-0",
+        className,
+      )}
+      {...props}
+    />
+  ),
+  h6: ({ className, ...props }) => (
+    <h6
+      className={cn(
+        "scroll-m-20 text-xs font-medium tracking-tight text-muted-foreground",
+        SPACING.headingTop,
+        SPACING.heading,
+        "first:mt-0 last:mb-0",
+        className,
+      )}
+      {...props}
+    />
+  ),
 
-    return (
-      <a
-        className={cn(
-          "text-primary underline underline-offset-4 decoration-dotted transition-colors hover:text-accent visited:text-muted-foreground",
-          "wrap-anywhere",
-          className,
-        )}
-        href={href}
-        target={isExternal ? "_blank" : undefined}
-        rel={isExternal ? "noopener noreferrer" : undefined}
-        {...props}
-      >
-        {children}
-        {isExternal && <ArrowUpRight className="m-0.5 inline-block h-4 w-4" />}
-      </a>
-    );
-  },
+  // Lists
   ul: ({ className, ...props }) => (
     <ul
       className={cn(
+        "list-disc pl-6",
         SPACING.list,
-        "list-disc space-y-1 pl-6 [&.contains-task-list]:list-none",
+        "last:mb-0",
+        "[&_ul]:mt-1 [&_ul]:mb-1 [&_ol]:mt-1 [&_ol]:mb-1",
         className,
       )}
       {...props}
@@ -122,57 +192,32 @@ const components: Components = {
   ),
   ol: ({ className, ...props }) => (
     <ol
-      className={cn(SPACING.list, "list-decimal space-y-1 pl-6", className)}
+      className={cn(
+        "list-decimal pl-6",
+        SPACING.list,
+        "last:mb-0",
+        "[&_ul]:mt-1 [&_ul]:mb-1 [&_ol]:mt-1 [&_ol]:mb-1",
+        className,
+      )}
       {...props}
     />
   ),
   li: ({ className, ...props }) => (
     <li
       className={cn(
-        "wrap-break-word leading-relaxed [&>input[type='checkbox']]:mr-2 [&>input[type='checkbox']]:mt-0.5 [&>input[type='checkbox']]:align-top",
+        "leading-7",
+        SPACING.listItem,
+        "last:mb-0",
+        "[&>p]:mb-1 [&>p:last-child]:mb-0",
         className,
       )}
       {...props}
     />
   ),
-  h1: ({ className, ...props }) => (
-    <h1
-      className={cn(SPACING.heading1, "text-2xl font-medium", className)}
-      {...props}
-    />
-  ),
-  h2: ({ className, ...props }) => (
-    <h2
-      className={cn(SPACING.heading2, "text-xl font-medium", className)}
-      {...props}
-    />
-  ),
-  h3: ({ className, ...props }) => (
-    <h3
-      className={cn(SPACING.heading3, "text-lg font-medium", className)}
-      {...props}
-    />
-  ),
-  h4: ({ className, ...props }) => (
-    <h4
-      className={cn(SPACING.heading4, "text-base font-medium", className)}
-      {...props}
-    />
-  ),
-  h5: ({ className, ...props }) => (
-    <h5
-      className={cn(SPACING.heading5, "text-sm font-medium", className)}
-      {...props}
-    />
-  ),
-  h6: ({ className, ...props }) => (
-    <h6
-      className={cn(SPACING.heading6, "text-xs font-medium", className)}
-      {...props}
-    />
-  ),
+
+  // Inline text
   strong: ({ className, ...props }) => (
-    <strong className={cn("font-semibold", className)} {...props} />
+    <strong className={cn("font-medium", className)} {...props} />
   ),
   em: ({ className, ...props }) => (
     <em className={cn("italic", className)} {...props} />
@@ -183,99 +228,60 @@ const components: Components = {
       {...props}
     />
   ),
-  img: ({ className, src, alt, ...props }) => (
-    // biome-ignore lint/performance/noImgElement: Markdown component needs to support arbitrary external images
-    <img
-      className={cn("rounded-lg max-w-full h-auto", className)}
-      src={src}
-      alt={alt}
-      {...props}
-    />
-  ),
-  input: ({ className, type, checked, ...props }) => {
-    if (type === "checkbox") {
-      return (
-        <input
-          type="checkbox"
-          checked={checked}
-          disabled
-          readOnly
-          className={cn(
-            "h-4 w-4 shrink-0 rounded border-border accent-primary",
-            className,
-          )}
-          {...props}
-        />
-      );
-    }
 
-    return null;
-  },
-  blockquote: ({ className, ...props }) => (
-    <blockquote
-      className={cn(SPACING.block, "border-l-4 border-border pl-4", className)}
-      {...props}
-    />
-  ),
-  hr: ({ className, ...props }) => (
-    <hr
-      className={cn(SPACING.divider, "border-border", className)}
-      {...props}
-    />
-  ),
-  table: ({ className, ...props }) => (
-    <div className={cn(SPACING.block, "overflow-x-auto rounded-lg border")}>
-      <table
-        className={cn("w-full border-collapse text-sm", className)}
+  // Links
+  a: ({ className, href, children, ...props }) => {
+    const isExternal =
+      typeof href === "string" &&
+      (href.startsWith("http://") || href.startsWith("https://"));
+
+    return (
+      <a
+        href={href}
+        className={cn(
+          "items-baseline gap-0.5 font-medium underline underline-offset-4",
+          "decoration-dotted hover:text-accent transition-colors",
+          "wrap-anywhere",
+          className,
+        )}
+        {...(isExternal
+          ? { target: "_blank", rel: "noopener noreferrer" }
+          : {})}
         {...props}
-      />
-    </div>
-  ),
-  thead: ({ className, ...props }) => (
-    <thead className={cn("bg-muted", className)} {...props} />
-  ),
-  tbody: ({ className, ...props }) => (
-    <tbody
-      className={cn(
-        "[&_tr:nth-child(even)]:bg-muted/50 [&_tr:last-child_td]:border-b-0",
-        className,
-      )}
-      {...props}
-    />
-  ),
-  tr: ({ className, ...props }) => (
-    <tr
-      className={cn("transition-colors hover:bg-muted/80", className)}
-      {...props}
-    />
-  ),
-  th: ({ className, ...props }) => (
-    <th
-      className={cn(
-        "border-b border-border px-4 py-3 text-left font-semibold",
-        className,
-      )}
-      {...props}
-    />
-  ),
-  td: ({ className, ...props }) => (
-    <td
-      className={cn("border-b border-border px-4 py-3", className)}
-      {...props}
-    />
-  ),
-  code: ({ className, children, ...props }) => {
-    const match = /language-(\w+)/.exec(className || "");
-    const text = String(children ?? "").replace(/\n$/, "");
+      >
+        {children}
+        {isExternal && (
+          <ArrowUpRight
+            className="ml-0.5 inline h-3.5 w-3.5 shrink-0 self-center"
+            aria-hidden
+          />
+        )}
+      </a>
+    );
+  },
 
-    if (match || text.includes("\n")) {
-      return <CodeBlock language={match?.[1] ?? ""}>{text}</CodeBlock>;
+  // Code
+  // Fenced code blocks delegate to <CodeBlock>.
+  // The `pre` override is neutralised so CodeBlock controls its own container.
+  // Inline code keeps a simple pill style.
+  pre: ({ children }) => <>{children}</>,
+
+  code: ({ className, children, ...props }) => {
+    const match = /language-(\w+)/.exec(className ?? "");
+
+    if (match) {
+      return (
+        <CodeBlock language={match[1]}>
+          {String(children).replace(/\n$/, "")}
+        </CodeBlock>
+      );
     }
 
     return (
       <code
         className={cn(
-          "rounded-md border border-border/70 bg-muted/80 px-[0.3rem] py-[0.05rem] font-mono text-[0.875em] text-accent",
+          "rounded-sm bg-muted px-[0.35em] py-[0.15em]",
+          "font-mono text-[0.875em] text-foreground",
           className,
         )}
         style={{
@@ -288,9 +294,84 @@ const components: Components = {
       </code>
     );
   },
-  pre: ({ children }) => <>{children}</>,
+
+  // Blockquote
+  blockquote: ({ className, ...props }) => (
+    <blockquote
+      className={cn(
+        "relative pl-4",
+        "before:absolute before:left-0 before:top-1 before:bottom-1 before:w-0.5 before:rounded-full before:bg-border",
+        SPACING.block,
+        "last:mb-0",
+        "[&>p]:mb-0",
+        className,
+      )}
+      {...props}
+    />
+  ),
+
+  // Horizontal rule
+  hr: ({ className, ...props }) => (
+    <hr className={cn("border-border", SPACING.hr, className)} {...props} />
+  ),
+
+  // Tables
+  table: ({ className, ...props }) => (
+    <div className={cn("w-full overflow-x-auto", SPACING.block, "last:mb-0")}>
+      <table
+        className={cn("w-full border-collapse text-sm", className)}
+        {...props}
+      />
+    </div>
+  ),
+  thead: ({ className, ...props }) => (
+    <thead className={cn("border-b border-border", className)} {...props} />
+  ),
+  tbody: ({ className, ...props }) => (
+    <tbody className={cn("[&_tr:last-child]:border-0", className)} {...props} />
+  ),
+  tr: ({ className, ...props }) => (
+    <tr
+      className={cn(
+        "border-b border-border transition-colors hover:bg-muted/40",
+        className,
+      )}
+      {...props}
+    />
+  ),
+  th: ({ className, ...props }) => (
+    <th
+      className={cn(
+        "px-4 py-2.5 text-left font-medium text-foreground",
+        "[[align=center]]:text-center [[align=right]]:text-right",
+        className,
+      )}
+      {...props}
+    />
+  ),
+  td: ({ className, ...props }) => (
+    <td
+      className={cn(
+        "px-4 py-2.5 text-muted-foreground",
+        "[[align=center]]:text-center [[align=right]]:text-right",
+        className,
+      )}
+      {...props}
+    />
+  ),
+
+  // Images
+  img: ({ className, alt, ...props }) => (
+    // biome-ignore lint/performance/noImgElement: intentional inside markdown
+    <img
+      className={cn("rounded-md", SPACING.block, "last:mb-0", className)}
+      alt={alt}
+      {...props}
+    />
+  ),
 };
 
+// Markdown
 export function Markdown({
   content,
   className,
@@ -302,6 +383,8 @@ export function Markdown({
     <div
       className={cn(
         "selection:bg-accent/30 selection:text-foreground",
+        "[&>*:first-child]:mt-0",
+        "[&>*:last-child]:mb-0",
         className,
       )}
     >
