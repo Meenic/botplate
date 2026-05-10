@@ -50,8 +50,7 @@ botplate/
     │   ├── layout.tsx
     │   ├── globals.css
     │   ├── (app)/chat/
-    │   │   ├── page.tsx                      ← server: bootstrap anon → create convo → redirect
-    │   │   └── [id]/page.tsx                 ← server: ownership check → ChatWindow + history
+    │   │   └── [id]/page.tsx                 ← server: load history → MessageList
     │   └── api/
     │       ├── auth/[...all]/route.ts       ← better-auth handler
     │       ├── chat/route.ts                ← POST → ChatStreamingService (auth-gated)
@@ -100,8 +99,10 @@ botplate/
         │   ├── schema/
         │   │   └── chat.ts                        ← conversations + messages tables
         │   └── ui/
-        │       ├── chat-window.tsx               ← 'use client' useChat UI
-        │       └── anonymous-bootstrap.tsx       ← signs in anon + router.refresh()
+        │       ├── message-list.tsx              ← renders UIMessage[] (presentational)
+        │       ├── message-ai.tsx                ← assistant message layout
+        │       ├── message-user.tsx              ← user message layout
+        │       └── message-part.tsx              ← renders individual message parts
         └── generation/
             └── application/
                 └── generation.service.ts        ← generateText + Output.object
@@ -309,9 +310,9 @@ const { output } = await generateText({
 
 `GenerationService.object<TSchema>()` is the canonical wrapper. Don't reach for the deprecated APIs — they've been removed from `ai@6`.
 
-### Chat UI (`useChat` + `DefaultChatTransport`)
+### Chat UI (`useChat` + `DefaultChatTransport`) (planned pattern)
 
-Client-side (`src/modules/chat/ui/chat-window.tsx`):
+The intended client-side entry point is a `chat-window.tsx` component (not yet committed):
 
 ```tsx
 import { useChat } from "@ai-sdk/react";
@@ -336,6 +337,8 @@ Key points:
 - `prepareSendMessagesRequest` ships only the **last** message + the chat id; the server reloads the rest from DB. Cuts payload size on long threads and matches the v6 persistence guide.
 - Render via `message.parts` (v6 shape), not a flat `content` string. `status` is `"ready" | "submitted" | "streaming" | "error"` — gate inputs on `status !== "ready"`. `sendMessage({ text })` is the dispatch one-liner.
 
+**Current state:** `chat-window.tsx` does not exist. The only chat UI components committed are `message-list.tsx`, `message-ai.tsx`, `message-user.tsx`, and `message-part.tsx` — all presentational. The interactive `useChat` wrapper is deferred to phase 3.
+
 ---
 
 ## 9. Auth
@@ -354,13 +357,15 @@ Key points:
 
 Forged or expired cookies still pass a cookie-only gate; the route handler check is what actually authenticates. The proxy is defense-in-depth.
 
-### Anonymous-by-default flow
+### Anonymous-by-default flow (planned, not yet implemented)
 
 1. User hits `/chat` with no session.
-2. `getCurrentUser()` returns `null`. The Server Component renders `<AnonymousBootstrap />`.
+2. `getCurrentUser()` returns `null`. The Server Component renders an anonymous-bootstrap client component.
 3. The bootstrap shim calls `authClient.signIn.anonymous()`, then `router.refresh()`.
 4. The Server Component re-runs with a session. It generates a chat id, creates a `conversations` row, and `redirect()`s to `/chat/[id]`.
 5. Subsequent visits skip the bootstrap entirely — the cookie is already there.
+
+**Current state:** There is no `/chat` page yet. The only chat route is `/chat/[id]`, which loads history from the DB and renders `<MessageList />`. Anonymous auth is configured in `better-auth`, but the bootstrap UI and conversation-creation flow are deferred to phase 3.
 
 Anon users carry the same `user.id` shape as real users, so all repository code (`conversations.user_id` FK, ownership checks) works uniformly.
 
@@ -570,7 +575,7 @@ When in doubt: read the file you're about to edit, run `bun run lint && bunx tsc
 ## 17. Phase roadmap (canonical order)
 
 - **Phase 1 — DONE.** AI seam (`ports` / `providers` / `registry` / `streaming`), stateless `chat` module + UI, `generation` module, `server/container.ts`, `instrumentation.ts` placeholder.
-- **Phase 2 — DONE.** `proxy.ts` (`ProxyStep` chain: request-id, cookie auth gate, rate-limit slot), `requireUser()` + `getCurrentUser()` in `src/server/auth-context.ts`, chat persistence (`modules/chat/schema/`, `modules/chat/infrastructure/conversation.repository.ts`, `onFinish` diff insert + `consumeStream()`), `/chat/[id]` dynamic route with history hydration, anonymous-friendly auth via better-auth's `anonymous()` plugin + `<AnonymousBootstrap />` shim, OTEL via `@vercel/otel` + `experimental_telemetry` on every SDK call.
+- **Phase 2 — DONE.** `proxy.ts` (`ProxyStep` chain: request-id, cookie auth gate, rate-limit slot), `requireUser()` + `getCurrentUser()` in `src/server/auth-context.ts`, chat persistence (`modules/chat/schema/`, `modules/chat/infrastructure/conversation.repository.ts`, `onFinish` diff insert + `consumeStream()`), `/chat/[id]` dynamic route with history hydration, anonymous-friendly auth config via better-auth's `anonymous()` plugin, OTEL via `@vercel/otel` + `experimental_telemetry` on every SDK call.
 - **Phase 3.** Typed tool registry per feature (`chatTools` populated, `InferUITools` on the client), rate-limit step implementation (Upstash / Redis token bucket), conversation list / sidebar at `/chat`, title auto-generation via `GenerationService.text()` on first turn, `db/` hardening (typed env in `drizzle.config.ts`, `src/db/index.ts` via `@/env`), `scripts/seed.ts`.
 - **Phase 4+.** Real auth UI + `onLinkAccount` reparenting, RAG module (pgvector + embeddings port + retrieval service wired as a chat tool), multi-model switching UI, attachments.
 
@@ -583,11 +588,12 @@ Don't skip ahead. Each phase assumes the prior one landed.
 - No **tools wired into chat.** `chatTools` is `{}` — the placeholder exists so `streamText({ tools })` is type-stable.
 - No **RAG / pgvector / embedding port / retrieval service.**
 - No **real auth UI.** All sign-ins are anonymous. The `onLinkAccount` callback in `src/lib/auth.ts` is a stub for the phase 4 reparenting logic.
-- No **conversation list / sidebar.** `/chat` always creates a new conversation and redirects; older threads are reachable only by URL.
+- No **`/chat` page or conversation list / sidebar.** There is no root `/chat` route; only `/chat/[id]` exists. Older threads are reachable only by direct URL.
 - No **rate limiting.** The `rateLimit` step in `proxy.ts` is a no-op slot — wire Upstash / Redis in phase 3.
 - No **title auto-generation.** `conversations.title` is nullable and never written. Backfill via `GenerationService.text()` lands in phase 3.
 - No **telemetry exporter wired.** `@vercel/otel` registers with default settings; configure exporters (OTLP, Honeycomb, Axiom) per environment.
 - No **tests.** `bun:test` is the planned harness; no files yet.
+- No **`chat-window.tsx`** or **`anonymous-bootstrap.tsx`** UI components. Only presentational message components exist.
 - No **`scripts/seed.ts`** (despite `package.json`'s `db:seed` script pointing at one).
 - No **multi-model UI switcher** — `modelId` is accepted by `/api/chat` but the default UI never sends it.
 - No **`db:migrate` fix.** The HTTP driver is deliberate; use `db:push`.
