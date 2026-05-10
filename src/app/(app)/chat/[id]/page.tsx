@@ -1,23 +1,54 @@
-import { notFound } from "next/navigation";
-import { AnonymousBootstrap } from "@/modules/chat/ui/anonymous-bootstrap";
-import { ChatWindow } from "@/modules/chat/ui/chat-window";
-import { getCurrentUser } from "@/server/auth-context";
-import { createContainer } from "@/server/container";
+import { Suspense, use } from "react";
+import { getConversationMessages } from "@/modules/chat/application/queries/messages";
+import { MessageList } from "@/modules/chat/ui/message-list";
 
-export default async function Page({
+export default function ChatPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
-  const user = await getCurrentUser();
-  if (!user) return <AnonymousBootstrap />;
+  return (
+    <div className="flex justify-center px-4 py-6 sm:px-6">
+      <div className="w-full max-w-2xl">
+        <Suspense fallback={<MessageListSkeleton />}>
+          <ChatMessages params={params} />
+        </Suspense>
+      </div>
+    </div>
+  );
+}
 
-  const { conversations } = createContainer();
-  const owned = await conversations.getOwned(id, user.id);
-  if (!owned) notFound();
+function ChatMessages({ params }: { params: Promise<{ id: string }> }) {
+  const messages = use(getConversationMessages({ params }));
+  return <MessageList initialMessages={messages} />;
+}
 
-  const initialMessages = await conversations.listMessages(id);
+function MessageListSkeleton() {
+  return (
+    <div className="space-y-6" aria-hidden>
+      {/* AI bubble */}
+      <div className="flex items-start gap-3">
+        <div className="min-w-0 flex-1 space-y-2">
+          <div className="h-4 w-3/4 animate-pulse rounded-full bg-muted" />
+          <div className="h-4 w-1/2 animate-pulse rounded-full bg-muted" />
+        </div>
+      </div>
 
-  return <ChatWindow chatId={id} initialMessages={initialMessages} />;
+      {/* User bubble */}
+      <div className="flex justify-end">
+        <div className="max-w-[70%] space-y-2">
+          <div className="h-4 w-48 animate-pulse rounded-full bg-muted" />
+        </div>
+      </div>
+
+      {/* AI bubble */}
+      <div className="flex items-start gap-3">
+        <div className="min-w-0 flex-1 space-y-2">
+          <div className="h-4 w-5/6 animate-pulse rounded-full bg-muted" />
+          <div className="h-4 w-2/3 animate-pulse rounded-full bg-muted" />
+          <div className="h-4 w-1/3 animate-pulse rounded-full bg-muted" />
+        </div>
+      </div>
+    </div>
+  );
 }
