@@ -1,7 +1,7 @@
 "use client";
 
 import type { UIMessage } from "ai";
-import { useScrollToBottom } from "./hooks/use-scroll-to-bottom";
+import { ChatLayout } from "./chat-layout";
 import { MessageAI } from "./message-ai";
 import { MessageUser } from "./message-user";
 
@@ -16,36 +16,32 @@ export function MessageList({
   isStreaming = false,
   renderActions,
 }: MessageListProps) {
-  // Passing the messages array as dep means the sentinel scrolls into view
-  // on every render caused by a new message or a streaming chunk.
-  const bottomRef = useScrollToBottom();
-
   return (
     <div
-      className="space-y-6"
       role="log"
       aria-label="Conversation"
       aria-live="polite"
       aria-busy={isStreaming}
     >
-      {initialMessages.map((message) =>
-        message.role === "user" ? (
-          <MessageUser
-            key={message.id}
-            message={message}
-            actions={renderActions?.(message)}
-          />
-        ) : (
-          <MessageAI
-            key={message.id}
-            message={message}
-            actions={renderActions?.(message)}
-          />
-        ),
-      )}
-
-      {/* Invisible sentinel */}
-      <div ref={bottomRef} aria-hidden />
+      <div className="px-4 sm:px-6">
+        <ChatLayout className="py-6 space-y-6">
+          {initialMessages.map((message) =>
+            message.role === "user" ? (
+              <MessageUser
+                key={message.id}
+                message={message}
+                actions={renderActions?.(message)}
+              />
+            ) : (
+              <MessageAI
+                key={message.id}
+                message={message}
+                actions={renderActions?.(message)}
+              />
+            ),
+          )}
+        </ChatLayout>
+      </div>
     </div>
   );
 }

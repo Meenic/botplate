@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowUpRight, Check, Copy } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import type { Components } from "react-markdown";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -30,7 +30,7 @@ export function CodeBlock({
 }) {
   const [copied, setCopied] = useState(false);
 
-  const handleCopy = useCallback(async () => {
+  const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(children);
       setCopied(true);
@@ -38,19 +38,19 @@ export function CodeBlock({
     } catch {
       // Clipboard API unavailable
     }
-  }, [children]);
+  };
 
   return (
     <div
       className={cn(
-        "relative rounded-3xl border border-border overflow-hidden",
+        "relative rounded-3xl bg-muted",
         SPACING.block,
         "last:mb-0",
         className,
       )}
     >
       {/* Header: language label + copy button */}
-      <div className="flex items-center justify-between p-2">
+      <div className="sticky top-0 z-10 rounded-3xl flex items-center justify-between bg-muted p-2">
         <span className="font-mono text-xs text-muted-foreground select-none ml-3">
           {language}
         </span>
@@ -66,25 +66,27 @@ export function CodeBlock({
       </div>
 
       {/* Scrollable code body */}
-      <SyntaxHighlighter
-        language={language}
-        style={syntaxTheme}
-        PreTag="div"
-        customStyle={{
-          background: "none",
-          padding: "0rem 1.25rem 0.75rem 1.25rem",
-          margin: 0,
-          fontSize: "0.750rem",
-          lineHeight: "1.7",
-          overflowX: "auto",
-          fontVariantLigatures: "none",
-        }}
-        codeTagProps={{
-          style: { fontFamily: "var(--font-mono, monospace)" },
-        }}
-      >
-        {children}
-      </SyntaxHighlighter>
+      <div className="overflow-hidden rounded-b-3xl">
+        <SyntaxHighlighter
+          language={language}
+          style={syntaxTheme}
+          PreTag="div"
+          customStyle={{
+            background: "none",
+            padding: "0rem 1.25rem 0.75rem 1.25rem",
+            margin: 0,
+            fontSize: "0.750rem",
+            lineHeight: "1.7",
+            overflowX: "auto",
+            fontVariantLigatures: "none",
+          }}
+          codeTagProps={{
+            style: { fontFamily: "var(--font-mono, monospace)" },
+          }}
+        >
+          {children}
+        </SyntaxHighlighter>
+      </div>
     </div>
   );
 }
@@ -239,7 +241,7 @@ const components: Components = {
       <a
         href={href}
         className={cn(
-          "items-baseline gap-0.5 font-medium underline underline-offset-4",
+          "items-baseline gap-0.5 font-medium underline underline-offset-3",
           "decoration-dotted hover:text-accent transition-colors",
           "wrap-anywhere",
           className,
@@ -268,12 +270,18 @@ const components: Components = {
 
   code: ({ className, children, ...props }) => {
     const match = /language-(\w+)/.exec(className ?? "");
+    const content = String(children);
+    const isBlock = content.includes("\n");
 
     if (match) {
       return (
-        <CodeBlock language={match[1]}>
-          {String(children).replace(/\n$/, "")}
-        </CodeBlock>
+        <CodeBlock language={match[1]}>{content.replace(/\n$/, "")}</CodeBlock>
+      );
+    }
+
+    if (isBlock) {
+      return (
+        <CodeBlock language="text">{content.replace(/\n$/, "")}</CodeBlock>
       );
     }
 
@@ -319,7 +327,10 @@ const components: Components = {
   table: ({ className, ...props }) => (
     <div className={cn("w-full overflow-x-auto", SPACING.block, "last:mb-0")}>
       <table
-        className={cn("w-full border-collapse text-sm", className)}
+        className={cn(
+          "w-full border-collapse text-sm rounded-lg overflow-hidden",
+          className,
+        )}
         {...props}
       />
     </div>
@@ -342,7 +353,7 @@ const components: Components = {
   th: ({ className, ...props }) => (
     <th
       className={cn(
-        "px-4 py-2.5 text-left font-medium text-foreground",
+        "px-4 py-2.5 text-left font-medium text-foreground first:rounded-tl-lg last:rounded-tr-lg",
         "[[align=center]]:text-center [[align=right]]:text-right",
         className,
       )}
@@ -365,6 +376,7 @@ const components: Components = {
     // biome-ignore lint/performance/noImgElement: intentional inside markdown
     <img
       className={cn("rounded-md", SPACING.block, "last:mb-0", className)}
+      loading="lazy"
       alt={alt}
       {...props}
     />
