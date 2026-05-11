@@ -49,7 +49,7 @@
 }
 
 :root {
-  --background: oklch(0.982 0.008 82);
+  --background: oklch(1 0 0);
   --foreground: oklch(0.165 0.02 58);
   --card: oklch(0.978 0.01 80);
   --card-foreground: oklch(0.165 0.02 58);
@@ -81,27 +81,23 @@
   --sidebar-accent-foreground: oklch(0.245 0.018 60);
   --sidebar-border: oklch(0.862 0.016 75);
   --sidebar-ring: oklch(0.645 0.17 48);
-  --syntax-base: oklch(0.22 0.018 60);
-  --syntax-comment: oklch(0.548 0.018 65);
-  --syntax-punctuation: oklch(0.42 0.014 62);
-  --syntax-keyword: oklch(0.42 0.148 288);
-  --syntax-string: oklch(0.46 0.128 152);
-  --syntax-number: oklch(0.58 0.158 52);
-  --syntax-function: oklch(0.44 0.125 238);
-  --syntax-class-name: oklch(0.48 0.13 198);
-  --syntax-attr-name: oklch(0.44 0.125 238);
-  --syntax-operator: oklch(0.48 0.11 48);
-  --syntax-tag: oklch(0.46 0.132 288);
-  --syntax-variable: oklch(0.58 0.158 52);
-  --syntax-regex: oklch(0.5 0.168 178);
-  --syntax-important: oklch(0.535 0.215 22);
-  --syntax-deleted: oklch(0.535 0.215 22);
-  --syntax-property: oklch(0.44 0.125 238);
+  /* Syntax highlighting */
+  --sh-keyword: oklch(0.52 0.19 32);
+  --sh-string: oklch(0.5 0.14 142);
+  --sh-comment: oklch(0.6 0.018 65);
+  --sh-number: oklch(0.48 0.14 258);
+  --sh-function: oklch(0.5 0.13 55);
+  --sh-class: oklch(0.52 0.16 62);
+  --sh-property: oklch(0.46 0.12 205);
+  --sh-operator: oklch(0.42 0.06 58);
+  --sh-attr: oklch(0.5 0.12 200);
+  --sh-tag: oklch(0.52 0.19 32);
+  --sh-punctuation: oklch(0.55 0.018 65);
 }
 
 .dark {
-  --background: oklch(0.128 0.006 58);
-  --foreground: oklch(0.952 0.012 82);
+  --background: oklch(0 0 0);
+  --foreground: oklch(1 0 0);
   --card: oklch(0.162 0.007 58);
   --card-foreground: oklch(0.952 0.012 82);
   --popover: oklch(0.162 0.007 58);
@@ -131,22 +127,18 @@
   --sidebar-accent-foreground: oklch(0.918 0.014 82);
   --sidebar-border: oklch(1 0.005 80 / 9%);
   --sidebar-ring: oklch(0.768 0.118 52);
-  --syntax-base: oklch(0.88 0.01 80);
-  --syntax-comment: oklch(0.632 0.01 68);
-  --syntax-punctuation: oklch(0.68 0.009 75);
-  --syntax-keyword: oklch(0.74 0.148 292);
-  --syntax-string: oklch(0.72 0.128 152);
-  --syntax-number: oklch(0.768 0.118 52);
-  --syntax-function: oklch(0.7 0.125 238);
-  --syntax-class-name: oklch(0.72 0.125 198);
-  --syntax-attr-name: oklch(0.7 0.125 238);
-  --syntax-operator: oklch(0.768 0.1 52);
-  --syntax-tag: oklch(0.7 0.132 288);
-  --syntax-variable: oklch(0.768 0.118 52);
-  --syntax-regex: oklch(0.7 0.165 178);
-  --syntax-important: oklch(0.685 0.2 22);
-  --syntax-deleted: oklch(0.685 0.2 22);
-  --syntax-property: oklch(0.7 0.125 238);
+  /* Syntax highlighting */
+  --sh-keyword: oklch(0.72 0.18 32);
+  --sh-string: oklch(0.72 0.14 142);
+  --sh-comment: oklch(0.55 0.012 68);
+  --sh-number: oklch(0.72 0.13 258);
+  --sh-function: oklch(0.78 0.13 55);
+  --sh-class: oklch(0.8 0.15 62);
+  --sh-property: oklch(0.72 0.12 205);
+  --sh-operator: oklch(0.72 0.06 70);
+  --sh-attr: oklch(0.72 0.12 200);
+  --sh-tag: oklch(0.72 0.18 32);
+  --sh-punctuation: oklch(0.6 0.012 68);
 }
 
 @layer base {

@@ -1,6 +1,6 @@
 import { getSessionCookie } from "better-auth/cookies";
 import { type NextRequest, NextResponse } from "next/server";
-import { UnauthorizedError } from "./server/errors";
+import { RateLimitedError, UnauthorizedError } from "./server/errors";
 
 /**
  * Handles cheap cross cutting concerns: request IDs, cookie auth gate,
@@ -17,6 +17,10 @@ type ProxyStep = (
   req: NextRequest,
   res: NextResponse,
 ) => ProxyStepResult | Promise<ProxyStepResult>;
+
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX_REQUESTS = 30;
+const rateLimitBuckets = new Map<string, { count: number; resetAt: number }>();
 
 // --- Security Headers -------------------------------------------------------
 
@@ -99,7 +103,43 @@ const requireSessionCookie: ProxyStep = (req) => {
 };
 
 /** Rate-limit slot. Phase 3 wires a token bucket (Upstash / Redis). */
-const rateLimit: ProxyStep = () => undefined;
+const rateLimit: ProxyStep = (req) => {
+  const now = Date.now();
+  const forwardedFor = req.headers
+    .get("x-forwarded-for")
+    ?.split(",")[0]
+    ?.trim();
+  const key = `${req.nextUrl.pathname}:${forwardedFor || "unknown"}`;
+  const bucket = rateLimitBuckets.get(key);
+
+  if (!bucket || bucket.resetAt <= now) {
+    rateLimitBuckets.set(key, {
+      count: 1,
+      resetAt: now + RATE_LIMIT_WINDOW_MS,
+    });
+    return undefined;
+  }
+
+  if (bucket.count >= RATE_LIMIT_MAX_REQUESTS) {
+    const error = new RateLimitedError("rate limit exceeded");
+    return Response.json(error.toJSON(), {
+      status: error.httpStatus,
+      headers: {
+        "Retry-After": Math.ceil((bucket.resetAt - now) / 1000).toString(),
+      },
+    });
+  }
+
+  bucket.count += 1;
+
+  if (rateLimitBuckets.size > 10_000) {
+    for (const [bucketKey, value] of rateLimitBuckets) {
+      if (value.resetAt <= now) rateLimitBuckets.delete(bucketKey);
+    }
+  }
+
+  return undefined;
+};
 
 // --- Routing ----------------------------------------------------------------
 
@@ -123,10 +163,9 @@ const PIPELINES: readonly Pipeline[] = [
     test: (p) => p.startsWith("/api/chat"),
     steps: [withRequestId, requireSessionCookie, rateLimit],
   },
-  // Generation is open today; flip to `requireSessionCookie` to lock down.
   {
     test: (p) => p.startsWith("/api/generate"),
-    steps: [withRequestId, rateLimit],
+    steps: [withRequestId, requireSessionCookie, rateLimit],
   },
 ];
 

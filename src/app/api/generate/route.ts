@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { requireUser } from "@/server/auth-context";
 import { createContainer } from "@/server/container";
 import { errorToResponse } from "@/server/http";
 
@@ -9,6 +10,7 @@ const Body = z.object({
 
 export async function POST(req: Request): Promise<Response> {
   try {
+    await requireUser();
     const data = Body.parse(await req.json());
     const { generation } = createContainer();
     const text = await generation.text(data);

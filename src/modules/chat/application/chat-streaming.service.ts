@@ -4,6 +4,7 @@ import {
   generateId,
   streamText,
   type UIMessage,
+  validateUIMessages,
 } from "ai";
 import type { LanguageModelRegistry } from "@/ai/registry/language-model.registry";
 import type { LanguageModelLogicalId } from "@/ai/registry/models.config";
@@ -12,12 +13,12 @@ import { env } from "@/env";
 import { consoleTelemetryIntegration } from "@/instrumentation";
 import { chatTools } from "@/modules/chat/application/tools";
 import type { ConversationRepository } from "@/modules/chat/infrastructure/conversation.repository";
-import { NotFoundError } from "@/server/errors";
+import { NotFoundError, ValidationError } from "@/server/errors";
 
 export interface StartStreamInput {
   readonly userId: string;
   readonly conversationId: string;
-  readonly lastMessage: UIMessage;
+  readonly lastMessage: unknown;
   readonly modelId?: LanguageModelLogicalId;
   readonly system?: string;
 }
@@ -69,9 +70,19 @@ export class ChatStreamingService {
     if (!owned) throw new NotFoundError("conversation not found");
 
     const previous = await this.conversations.listMessages(conversationId);
-    const thread: UIMessage[] = [...previous, lastMessage];
+    const thread = await validateUIMessages<UIMessage>({
+      messages: [...previous, lastMessage],
+      tools: chatTools,
+    }).catch((cause) => {
+      throw new ValidationError("invalid chat messages", { cause });
+    });
 
-    await this.conversations.insertMessages(conversationId, [lastMessage]);
+    const userMessage = thread.at(-1);
+    if (!userMessage || userMessage.role !== "user") {
+      throw new ValidationError("last message must be a user message");
+    }
+
+    await this.conversations.insertMessages(conversationId, [userMessage]);
 
     const result = streamText({
       model: this.models.get(modelId),

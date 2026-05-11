@@ -2,7 +2,6 @@ import type { UIMessage } from "ai";
 import { and, asc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { conversations, messages } from "@/modules/chat/schema/chat";
-import type { ChatUIMessage } from "../chat.types";
 
 export type Conversation = typeof conversations.$inferSelect;
 export type Message = typeof messages.$inferSelect;
@@ -18,7 +17,11 @@ export abstract class ConversationRepository {
     id: string,
     userId: string,
   ): Promise<ConversationRow | null>;
-  abstract listMessages(conversationId: string): Promise<ChatUIMessage[]>;
+  abstract listMessages(conversationId: string): Promise<UIMessage[]>;
+  abstract listOwnedMessages(
+    conversationId: string,
+    userId: string,
+  ): Promise<UIMessage[] | null>;
   abstract insertMessages(
     conversationId: string,
     msgs: UIMessage[],
@@ -37,10 +40,11 @@ export class DrizzleConversationRepository extends ConversationRepository {
       .from(conversations)
       .where(and(eq(conversations.id, id), eq(conversations.userId, userId)))
       .limit(1);
+
     return row[0] ?? null;
   }
 
-  async listMessages(conversationId: string): Promise<ChatUIMessage[]> {
+  async listMessages(conversationId: string): Promise<UIMessage[]> {
     const rows = await db
       .select({
         id: messages.id,
@@ -51,10 +55,16 @@ export class DrizzleConversationRepository extends ConversationRepository {
       .where(eq(messages.conversationId, conversationId))
       .orderBy(asc(messages.createdAt));
 
-    return rows.map((r) => ({
-      ...r,
-      parts: r.parts as ChatUIMessage["parts"],
-    }));
+    return rows;
+  }
+
+  async listOwnedMessages(
+    conversationId: string,
+    userId: string,
+  ): Promise<UIMessage[] | null> {
+    const owned = await this.getOwned(conversationId, userId);
+    if (!owned) return null;
+    return this.listMessages(conversationId);
   }
 
   async insertMessages(conversationId: string, msgs: UIMessage[]) {
